@@ -1,0 +1,35 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@libsql/client";
+
+// Rename to useUsers to follow the naming convention for hooks
+const useUsers = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const client = createClient({
+          url: process.env.NEXT_PUBLIC_TURSO_DATABASE_URL,
+          authToken: process.env.NEXT_PUBLIC_TURSO_AUTH_TOKEN,
+        });
+
+        const result = await client.execute("SELECT * FROM users");
+        setUsers(result.rows); // Assuming the structure includes 'rows'
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  return { users, loading, error };
+};
+
+export default useUsers;
